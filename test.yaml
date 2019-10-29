@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: imagetter_test
+  namespace: default
+  labels:
+    k8s-app: imagetter_test
+spec:
+  selector:
+    matchLabels:
+      name: imagetter_test
+  template:
+    metadata:
+      labels:
+        name: imagetter_test
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+      containers:
+        - name: weird-name
+          image: ubuntu1vgyguhnjokl
+          imagePullPolicy: Never
+          tty: true
+          command:
+            - cat
+      initContainers:
+        - name: getimage
+          imagePullPolicy: Never
+          image: imagetter
+          env:
+            - name: ShR_IMAGE # here you need to input image that you want to run
+              value: ubuntu1vgyguhnjokl
+            - name: ShR_SERVERS # here you need to insert servers list
+              value: "192.168.66.100 192.168.66.101 192.168.66.102 192.168.66.103 192.168.66.104 192.168.66.105 192.168.66.106 192.168.66.107"
+          volumeMounts:
+            - mountPath: /var/run/docker.sock
+              name: docker
+      volumes:
+        - name: docker
+          hostPath:
+            path: /var/run/docker.sock
